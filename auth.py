@@ -1,19 +1,39 @@
 import streamlit as st
+from db import supabase
 
-users = {
-    "agent": {"password": "1234", "role": "agent"},
-    "admin": {"password": "admin", "role": "admin"}
-}
+def signup_ui():
+    st.title("Créer un compte")
 
-def login():
-    st.sidebar.title("Connexion")
-    username = st.sidebar.text_input("Utilisateur")
-    password = st.sidebar.text_input("Mot de passe", type="password")
+    email = st.text_input("Email")
+    password = st.text_input("Mot de passe", type="password")
 
-    if st.sidebar.button("Se connecter"):
-        if username in users and users[username]["password"] == password:
-            st.session_state["user"] = username
-            st.session_state["role"] = users[username]["role"]
-            st.success("Connecté")
+    if st.button("Créer compte"):
+        res = supabase.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+        st.success("Compte créé ✅")
+
+
+def login_ui():
+    st.title("Connexion")
+
+    email = st.text_input("Email")
+    password = st.text_input("Mot de passe", type="password")
+
+    if st.button("Se connecter"):
+        res = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        if res.user:
+            st.session_state["user"] = res.user
+            st.success("Connecté ✅")
         else:
-            st.error("Erreur de connexion")
+            st.error("Erreur ❌")
+
+
+def logout():
+    st.session_state.clear()
+    
